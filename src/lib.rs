@@ -323,6 +323,12 @@ where
                 //      identity, this will lead to a looping scenario where
                 //      node A delcares B down, then B changes identity and
                 //      declares A down; nonstop
+                #[cfg(feature = "tracing")]
+                tracing::warn!(
+                    "identity {:?} has same prefix as ours ({:?}), declaring as down!",
+                    update.id(),
+                    self.identity
+                );
                 self.apply_update(Member::down(update.into_identity()), &mut runtime)?;
             } else {
                 self.apply_update(update, &mut runtime)?;
