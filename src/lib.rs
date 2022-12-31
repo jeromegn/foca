@@ -287,6 +287,11 @@ where
         self.members.num_active()
     }
 
+    #[cfg(feature = "tracing")]
+    pub fn dump_updates(&self) {
+        tracing::info!("{:#?}", self.updates)
+    }
+
     /// Applies cluster updates to this foca instance.
     ///
     /// This is for advanced usage. It's intended as a way to unlock

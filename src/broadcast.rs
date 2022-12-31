@@ -213,6 +213,17 @@ where
     }
 }
 
+impl<V> fmt::Debug for Broadcasts<V>
+where
+    V: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Broadcasts")
+            .field("storage", &self.storage)
+            .finish()
+    }
+}
+
 #[derive(Debug, Clone)]
 struct Entry<T> {
     remaining_tx: usize,
