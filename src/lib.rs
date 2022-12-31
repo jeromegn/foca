@@ -1460,6 +1460,18 @@ impl<T> AsRef<[u8]> for ClusterUpdate<T> {
     }
 }
 
+impl<T> fmt::Debug for ClusterUpdate<T>
+where
+    T: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ClusterUpdate")
+            .field("member_id", &self.member_id)
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
 #[cfg(test)]
 impl<T, C, RNG, B> Foca<T, C, RNG, B>
 where
