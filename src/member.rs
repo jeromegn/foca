@@ -139,14 +139,11 @@ pub(crate) struct Members<T> {
     num_active: usize,
 }
 
-#[cfg(test)]
-impl<T> Members<T> {
-    pub fn len(&self) -> usize {
+impl<T: PartialEq + Clone> Members<T> {
+    pub(crate) fn len(&self) -> usize {
         self.inner.len()
     }
-}
 
-impl<T: PartialEq + Clone> Members<T> {
     pub fn num_active(&self) -> usize {
         self.num_active
     }

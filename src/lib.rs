@@ -162,6 +162,29 @@ impl<T: Identity, C, RNG, B: BroadcastHandler<T>> fmt::Debug for Foca<T, C, RNG,
     }
 }
 
+/// everything that might be useful to diagnose a logical issue
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[allow(dead_code)]
+pub struct DebugInfo<T> {
+    current_identity: T,
+    total_members: usize,
+    active_members: usize,
+    backlog_len: usize,
+    backlog: Vec<UpdateEntry<T>>,
+}
+
+/// a (decoded) entry from foca.updates
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[allow(dead_code)]
+pub struct UpdateEntry<T> {
+    key: T,
+    reamining_tx: usize,
+    data_len: usize,
+    decoded_data: Member<T>,
+}
+
 // XXX Does it make sense to have different associated type restrictions
 //     based on a feature flag? Say: when using `std` we would enforce
 //     that `Codec::Error` and `BroadcastHandler::Error` both implement
@@ -285,6 +308,34 @@ where
     /// Foca method that takes `&mut self` is called in-between.
     pub fn num_members(&self) -> usize {
         self.members.num_active()
+    }
+
+    /// Decodes and dumps the current state of the updates backlog
+    pub fn debug_info(&mut self) -> Result<DebugInfo<T>> {
+        let backlog_len = self.updates_backlog();
+        let mut backlog = Vec::with_capacity(backlog_len);
+
+        for entry in self.updates.iter() {
+            let decoded = self
+                .codec
+                .decode_member(&entry.value.data[..])
+                .map_err(anyhow::Error::msg)
+                .map_err(Error::Decode)?;
+            backlog.push(UpdateEntry {
+                key: entry.value.member_id.clone(),
+                reamining_tx: entry.remaining_tx,
+                data_len: entry.value.data.len(),
+                decoded_data: decoded,
+            })
+        }
+
+        return Ok(DebugInfo {
+            current_identity: self.identity().clone(),
+            total_members: self.members.len(),
+            active_members: self.num_members(),
+            backlog_len,
+            backlog,
+        });
     }
 
     /// Applies cluster updates to this foca instance.
