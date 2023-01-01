@@ -116,6 +116,11 @@ where
         self.storage.len()
     }
 
+    pub(crate) fn iter(&self) -> impl Iterator<Item = &Entry<T>> {
+        // reversed because this is how we traverse it for fill()
+        self.storage.iter().rev()
+    }
+
     pub fn add_or_replace(&mut self, value: T, max_tx: usize) {
         let new_node = Entry {
             remaining_tx: max_tx,
@@ -214,9 +219,9 @@ where
 }
 
 #[derive(Debug, Clone)]
-struct Entry<T> {
-    remaining_tx: usize,
-    value: T,
+pub(crate) struct Entry<T> {
+    pub(crate) remaining_tx: usize,
+    pub(crate) value: T,
 }
 
 impl<T: AsRef<[u8]>> PartialEq for Entry<T> {
